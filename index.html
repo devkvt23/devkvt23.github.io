@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delhi The Hottie</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .prediction-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .prediction-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group input {
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            width: 180px;
+            transition: border-color 0.2s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .predict-btn {
+            padding: 12px 24px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
+        
+        .predict-btn:hover {
+            background: #2980b9;
+        }
+        
+        .result {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            font-size: 1.1em;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .equation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #2c3e50;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .input-group input {
+                width: 100%;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Lets's Find temperature of Delhi using simple regression.</h1>
+            <p>Historical data from 1901 to 2021 with linear regression prediction</p>
+            <p>The Data belongs to Government of Delhi</p>
+            <p>Link <a href="https://www.data.gov.in/resource/seasonal-and-annual-mean-temperature-series-period-1901-2021" target="_blank">Is Here.</a></p>
+        </div>
+        
+        <div class="prediction-section">
+            <h2>Temperature Prediction</h2>
+            <div class="input-group">
+                <input type="number" id="yearInput" placeholder="Enter year (e.g., 2050)" min="2022" max="2100">
+                <button class="predict-btn" onclick="predictTemperature()">Predict</button>
+            </div>
+            <div class="result" id="predictionResult">
+                Enter a future year to see the predicted temperature
+            </div>
+            <div class="equation" id="regressionEquation">
+                Loading regression equation...
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <div class="chart-wrapper">
+                <canvas id="temperatureChart"></canvas>
+            </div>
+        </div>
+        
+        
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Delhi temperature data (1901-2021)
+        const temperatureData = [
+            {year: 1901, temp: 25.42}, {year: 1902, temp: 25.42}, {year: 1903, temp: 25.01}, {year: 1904, temp: 24.93},
+            {year: 1905, temp: 24.84}, {year: 1906, temp: 25.18}, {year: 1907, temp: 25.02}, {year: 1908, temp: 25.0},
+            {year: 1909, temp: 24.96}, {year: 1910, temp: 24.84}, {year: 1911, temp: 25.08}, {year: 1912, temp: 25.2},
+            {year: 1913, temp: 24.95}, {year: 1914, temp: 25.07}, {year: 1915, temp: 25.44}, {year: 1916, temp: 25.08},
+            {year: 1917, temp: 24.54}, {year: 1918, temp: 24.96}, {year: 1919, temp: 25.15}, {year: 1920, temp: 25.14},
+            {year: 1921, temp: 25.45}, {year: 1922, temp: 25.18}, {year: 1923, temp: 25.16}, {year: 1924, temp: 25.3},
+            {year: 1925, temp: 24.97}, {year: 1926, temp: 25.14}, {year: 1927, temp: 25.01}, {year: 1928, temp: 25.31},
+            {year: 1929, temp: 25.15}, {year: 1930, temp: 25.01}, {year: 1931, temp: 25.45}, {year: 1932, temp: 25.25},
+            {year: 1933, temp: 24.91}, {year: 1934, temp: 25.06}, {year: 1935, temp: 25.05}, {year: 1936, temp: 25.11},
+            {year: 1937, temp: 25.0}, {year: 1938, temp: 25.1}, {year: 1939, temp: 25.09}, {year: 1940, temp: 24.97},
+            {year: 1941, temp: 25.61}, {year: 1942, temp: 25.26}, {year: 1943, temp: 24.84}, {year: 1944, temp: 24.86},
+            {year: 1945, temp: 24.69}, {year: 1946, temp: 25.29}, {year: 1947, temp: 25.35}, {year: 1948, temp: 25.29},
+            {year: 1949, temp: 25.16}, {year: 1950, temp: 24.88}, {year: 1951, temp: 25.33}, {year: 1952, temp: 25.41},
+            {year: 1953, temp: 25.58}, {year: 1954, temp: 25.24}, {year: 1955, temp: 25.02}, {year: 1956, temp: 24.95},
+            {year: 1957, temp: 25.15}, {year: 1958, temp: 25.75}, {year: 1959, temp: 25.36}, {year: 1960, temp: 25.39},
+            {year: 1961, temp: 24.97}, {year: 1962, temp: 25.05}, {year: 1963, temp: 25.24}, {year: 1964, temp: 25.23},
+            {year: 1965, temp: 25.23}, {year: 1966, temp: 25.52}, {year: 1967, temp: 25.17}, {year: 1968, temp: 25.09},
+            {year: 1969, temp: 25.58}, {year: 1970, temp: 25.23}, {year: 1971, temp: 24.83}, {year: 1972, temp: 25.22},
+            {year: 1973, temp: 25.37}, {year: 1974, temp: 25.08}, {year: 1975, temp: 24.84}, {year: 1976, temp: 25.11},
+            {year: 1977, temp: 25.29}, {year: 1978, temp: 25.13}, {year: 1979, temp: 25.62}, {year: 1980, temp: 25.6},
+            {year: 1981, temp: 25.29}, {year: 1982, temp: 25.25}, {year: 1983, temp: 25.12}, {year: 1984, temp: 25.22},
+            {year: 1985, temp: 25.4}, {year: 1986, temp: 25.23}, {year: 1987, temp: 25.65}, {year: 1988, temp: 25.55},
+            {year: 1989, temp: 25.15}, {year: 1990, temp: 25.26}, {year: 1991, temp: 25.39}, {year: 1992, temp: 25.25},
+            {year: 1993, temp: 25.46}, {year: 1994, temp: 25.39}, {year: 1995, temp: 25.46}, {year: 1996, temp: 25.42},
+            {year: 1997, temp: 25.35}, {year: 1998, temp: 25.72}, {year: 1999, temp: 25.57}, {year: 2000, temp: 25.53},
+            {year: 2001, temp: 25.6}, {year: 2002, temp: 25.74}, {year: 2003, temp: 25.61}, {year: 2004, temp: 25.65},
+            {year: 2005, temp: 25.58}, {year: 2006, temp: 25.72}, {year: 2007, temp: 25.67}, {year: 2008, temp: 25.55},
+            {year: 2009, temp: 26.05}, {year: 2010, temp: 26.03}, {year: 2011, temp: 25.62}, {year: 2012, temp: 25.6},
+            {year: 2013, temp: 25.68}, {year: 2014, temp: 25.73}, {year: 2015, temp: 25.92}, {year: 2016, temp: 26.2},
+            {year: 2017, temp: 26.04}, {year: 2018, temp: 25.9}, {year: 2019, temp: 25.86}, {year: 2020, temp: 25.78},
+            {year: 2021, temp: 25.93}
+        ];
+
+        let chart;
+        let regression;
+
+        function calculateLinearRegression(data) {
+            const n = data.length;
+            const sumX = data.reduce((sum, d) => sum + d.year, 0);
+            const sumY = data.reduce((sum, d) => sum + d.temp, 0);
+            const sumXY = data.reduce((sum, d) => sum + d.year * d.temp, 0);
+            const sumXX = data.reduce((sum, d) => sum + d.year * d.year, 0);
+            const sumYY = data.reduce((sum, d) => sum + d.temp * d.temp, 0);
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+
+            // Calculate R²
+            const yMean = sumY / n;
+            const ssTotal = data.reduce((sum, d) => sum + Math.pow(d.temp - yMean, 2), 0);
+            const ssResidual = data.reduce((sum, d) => {
+                const predicted = slope * d.year + intercept;
+                return sum + Math.pow(d.temp - predicted, 2);
+            }, 0);
+            const rSquared = 1 - (ssResidual / ssTotal);
+
+            return { slope, intercept, rSquared };
+        }
+
+        function initializeApp() {
+            regression = calculateLinearRegression(temperatureData);
+            createChart();
+            updateStats();
+            updateEquation();
+        }
+
+        function createChart() {
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+            
+            const regressionData = temperatureData.map(d => ({
+                x: d.year,
+                y: regression.slope * d.year + regression.intercept
+            }));
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Actual Temperature',
+                        data: temperatureData.map(d => ({x: d.year, y: d.temp})),
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        pointHoverRadius: 5,
+                        tension: 0,
+                        fill: false
+                    }, {
+                        label: 'Linear Trend',
+                        data: regressionData,
+                        borderColor: '#3498db',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Delhi Annual Temperature (1901-2021)',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStats() {
+            const temps = temperatureData.map(d => d.temp);
+            const avgTemp = (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(2);
+            const maxTemp = Math.max(...temps);
+            const minTemp = Math.min(...temps);
+            const tempRange = (maxTemp - minTemp).toFixed(2);
+            const warmingRate = (regression.slope * 10).toFixed(4); // per decade
+            
+            document.getElementById('avgTemp').textContent = avgTemp + '°C';
+            document.getElementById('tempRange').textContent = tempRange + '°C';
+            document.getElementById('warmingRate').textContent = '+' + warmingRate + '°C';
+            document.getElementById('rSquared').textContent = regression.rSquared.toFixed(3);
+        }
+
+        function updateEquation() {
+            const slope = regression.slope.toFixed(6);
+            const intercept = regression.intercept.toFixed(2);
+            const sign = intercept >= 0 ? '+' : '';
+            document.getElementById('regressionEquation').textContent = 
+                `Temperature = ${slope} × Year ${sign} ${intercept}`;
+        }
+
+        function predictTemperature() {
+            const yearInput = document.getElementById('yearInput');
+            const resultDiv = document.getElementById('predictionResult');
+            const year = parseInt(yearInput.value);
+            
+            if (!year || year < 2022 || year > 2100) {
+                resultDiv.textContent = 'Please enter a valid year between 2022 and 2100';
+                return;
+            }
+            
+            const predictedTemp = regression.slope * year + regression.intercept;
+            
+            resultDiv.innerHTML = `
+                Predicted temperature for <strong>${year}</strong>: 
+                <strong>${predictedTemp.toFixed(2)}°C</strong>
+            `;
+            
+            updateChartWithPrediction(year, predictedTemp);
+        }
+
+        function updateChartWithPrediction(year, temp) {
+            chart.data.datasets = chart.data.datasets.filter(dataset => dataset.label !== 'Prediction');
+            
+            chart.data.datasets.push({
+                label: 'Prediction',
+                data: [{x: year, y: temp}],
+                borderColor: '#f39c12',
+                backgroundColor: '#f39c12',
+                borderWidth: 0,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                showLine: false
+            });
+            
+            chart.update();
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        document.getElementById('yearInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                predictTemperature();
+            }
+        });
+    </script>
+</body>
+</html>
